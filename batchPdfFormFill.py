@@ -138,12 +138,13 @@ class CoreGui(Frame):
         for index, row in df.iterrows():
             getRow = row.to_dict()
             IDval = itemgetter(*ID)(getRow)
-            IDname = "_".join(IDval)
+            if type(IDval) is tuple:
+                IDval = "_".join(IDval)
             count = index + 1
             pypdftk.fill_form('"'+self.inputPdf.get()+'"', datas=getRow,
                               out_file='"'+tP+'/'+
-                              OutPDF+'_'+IDname+'_'+str(count)+'.pdf'+'"', flatten=False, need_appearances=True)
-            print('Created: '+OutPDF+'_'+IDname+'_'+str(count)+'.pdf')
+                              OutPDF+'_'+IDval+'_'+str(count)+'.pdf'+'"', flatten=False, need_appearances=True)
+            print('Created: '+OutPDF+'_'+IDval+'_'+str(count)+'.pdf')
 
     def extractMultiplePDF(self):
         pdfPath = self.inputBase.get()

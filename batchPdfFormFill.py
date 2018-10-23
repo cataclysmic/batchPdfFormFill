@@ -141,10 +141,18 @@ class CoreGui(Frame):
             if type(IDval) is tuple:
                 IDval = "_".join(IDval)
             count = index + 1
+            filename = OutPDF+'_'+IDval+'.pdf'
+            createdPdfList = listdir(tP)
+            if filename in createdPdfList:
+                count = 1
+                while filename in createdPdfList:
+                    filename = OutPDF+'_'+IDval+'_'+str(count)+'.pdf'
+                    count += 1
             pypdftk.fill_form('"'+self.inputPdf.get()+'"', datas=getRow,
-                              out_file='"'+tP+'/'+
-                              OutPDF+'_'+IDval+'_'+str(count)+'.pdf'+'"', flatten=False, need_appearances=True)
-            print('Created: '+OutPDF+'_'+IDval+'_'+str(count)+'.pdf')
+                              out_file='"'+tP+'/'+filename+'"',
+                              flatten=False, need_appearances=True)
+            print('Created: '+filename)
+
 
     def extractMultiplePDF(self):
         pdfPath = self.inputBase.get()

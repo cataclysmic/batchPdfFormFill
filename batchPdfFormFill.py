@@ -1,4 +1,4 @@
-from tkinter import filedialog, Frame, Button, Entry, Tk, StringVar, E, Label
+from tkinter import filedialog, Frame, Button, Entry, Tk, StringVar, E, Label, messagebox
 from pandas import read_excel, DataFrame, ExcelFile, ExcelWriter
 import pypdftk
 from operator import itemgetter
@@ -160,16 +160,29 @@ class CoreGui(Frame):
         pdfFiles = [x for x in listdir(pdfPath) if ".pdf" in x.lower()]
         rows = []
         for el in pdfFiles:
-            raw = pypdftk.dump_data_fields(pdfPath+'/'+el)
-            rows = rows + [(x['FieldName'], x['FieldValue']) for x in raw]
+            raw = pypdftk.dump_data_fields('"'+pdfPath+'/'+el+'"')
+            for x in raw:
+                if "FieldValue" in x.keys():
+                    rows = rows + [(x['FieldName'], x['FieldValue'])]
+                else:
+                    rows = rows + [(x['FieldName'], '')]
+        print(rows)
+
+        if len(rows) == 0:
+            messagebox.showinfo("Hinweis","Es wurden keine Formulardaten gefunden.\nProzess abgebrochen.")
+            return(0)
+
         drows = defaultdict(list)
         for k, v in rows:
             drows[k].append(v)
-        df = DataFrame.from_dict(drows)
-        print(df)
-        writer = ExcelWriter(self.outputExcel.get())
-        df.to_excel(writer, 'Sheet1', index=False)
-        writer.save()
+        try:
+            df = DataFrame.from_dict(drows)
+            print(df)
+            writer = ExcelWriter(self.outputExcel.get())
+            df.to_excel(writer, 'Sheet1', index=False)
+            writer.save()
+        except:
+            messagebox.showinfo("Hinweis","Die Dokumente enthalten unterschiedliche Formulardaten.\nDie Anwendung kann nur ein Set Formulardaten verarbeiten.\nProzess abgebrochen.")
 
 
 root = Tk()

@@ -140,7 +140,6 @@ class CoreGui(Frame):
             IDval = itemgetter(*ID)(getRow)
             if type(IDval) is tuple:
                 IDval = "_".join(map(str,IDval))
-            count = index + 1
             filename = IDval+'_'+OutPDF+'.pdf'
             createdPdfList = listdir(tP)
             if filename in createdPdfList:

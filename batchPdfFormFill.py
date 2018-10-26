@@ -135,13 +135,17 @@ class CoreGui(Frame):
         # generate output file base string
         OutPDF = self.inputPdf.get().split('/')[-1].split(".")[0]
         ID = self.inputID.get().split(',')
+        # iterate by row of data frame
         for index, row in df.iterrows():
             getRow = row.to_dict()
+            # get IDs for name
             IDval = itemgetter(*ID)(getRow)
+            # if multiple ID parts join them into single string
             if type(IDval) is tuple:
                 IDval = "_".join(map(str,IDval))
             filename = IDval+'_'+OutPDF+'.pdf'
             createdPdfList = listdir(tP)
+            # add counter if filename already exists
             if filename in createdPdfList:
                 count = 1
                 while filename in createdPdfList:

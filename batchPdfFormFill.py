@@ -163,13 +163,14 @@ class CoreGui(Frame):
         rows = []
         for el in pdfFiles:
             raw = pypdftk.dump_data_fields('"'+pdfPath+'/'+el+'"')
-            for x in raw:
-                if "FieldValue" in x.keys():
-                    rows = rows + [(x['FieldName'], x['FieldValue'])]
-                else:
-                    rows = rows + [(x['FieldName'], '')]
-            print("Formulardaten:")
-            print(rows)
+            if len(raw) > 0:
+                for x in raw:
+                    if "FieldValue" in x.keys():
+                        rows = rows + [(x['FieldName'], x['FieldValue'])]
+                    else:
+                        rows = rows + [(x['FieldName'], '')]
+        print("Formulardaten:")
+        print(rows)
 
         if len(rows) == 0:
             messagebox.showinfo("Hinweis","Es wurden keine Formulardaten gefunden.\nProzess abgebrochen.")

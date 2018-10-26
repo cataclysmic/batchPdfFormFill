@@ -158,6 +158,8 @@ class CoreGui(Frame):
         pdfPath = self.inputBase.get()
         xlsxOut = self.outputExcel.get()
         pdfFiles = [x for x in listdir(pdfPath) if ".pdf" in x.lower()]
+        print("Gefundene PDFs:")
+        print(pdfFiles)
         rows = []
         for el in pdfFiles:
             raw = pypdftk.dump_data_fields('"'+pdfPath+'/'+el+'"')
@@ -166,7 +168,8 @@ class CoreGui(Frame):
                     rows = rows + [(x['FieldName'], x['FieldValue'])]
                 else:
                     rows = rows + [(x['FieldName'], '')]
-        print(rows)
+            print("Formulardaten:")
+            print(rows)
 
         if len(rows) == 0:
             messagebox.showinfo("Hinweis","Es wurden keine Formulardaten gefunden.\nProzess abgebrochen.")
@@ -182,7 +185,7 @@ class CoreGui(Frame):
             df.to_excel(writer, 'Sheet1', index=False)
             writer.save()
         except:
-            messagebox.showinfo("Hinweis","Die Dokumente enthalten unterschiedliche Formulardaten.\nDie Anwendung kann nur ein Set Formulardaten verarbeiten.\nProzess abgebrochen.")
+            messagebox.showinfo("Hinweis","Die Struktur der Formulardaten.\nDie Anwendung verarbeitet jeweils nur ein Set Formulardaten.\nProzess abgebrochen.")
 
 
 root = Tk()

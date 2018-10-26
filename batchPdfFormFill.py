@@ -139,14 +139,14 @@ class CoreGui(Frame):
             getRow = row.to_dict()
             IDval = itemgetter(*ID)(getRow)
             if type(IDval) is tuple:
-                IDval = "_".join(IDval)
+                IDval = "_".join(map(str,IDval))
             count = index + 1
-            filename = OutPDF+'_'+IDval+'.pdf'
+            filename = IDval+'_'+OutPDF+'.pdf'
             createdPdfList = listdir(tP)
             if filename in createdPdfList:
                 count = 1
                 while filename in createdPdfList:
-                    filename = OutPDF+'_'+IDval+'_'+str(count)+'.pdf'
+                    filename = IDval+'_'+OutPDF+'_'+str(count)+'.pdf'
                     count += 1
             pypdftk.fill_form('"'+self.inputPdf.get()+'"', datas=getRow,
                               out_file='"'+tP+'/'+filename+'"',

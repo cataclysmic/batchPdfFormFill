@@ -1,4 +1,4 @@
-# -*- encoding: UTF-8 -*-
+##### -*- encoding: UTF-8 -*-
 
 ''' pypdftk
 
@@ -23,6 +23,7 @@ else:
     if not os.path.isfile(PDFTK_PATH):
         PDFTK_PATH = 'pdftk'
 
+PDFTK_PATH = os.path.join(os.getcwd(), 'pdftk.exe')
 
 def check_output(*popenargs, **kwargs):
     if 'stdout' in kwargs:
@@ -40,7 +41,7 @@ def check_output(*popenargs, **kwargs):
 
 def run_command(command, shell=False):
     ''' run a system command and yield output '''
-    p = check_output(command, shell=shell)
+    p = check_output(command)
     return p.split(b'\n')
 
 try:
@@ -83,7 +84,7 @@ def fill_form(pdf_path, datas={}, out_file=None, flatten=True, need_appearances=
     finally:
         if handle:
             os.close(handle)
-    os.remove(tmp_fdf)
+    #os.remove(tmp_fdf)
     return out_file
 
 def dump_data_fields(pdf_path):

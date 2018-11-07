@@ -2,7 +2,7 @@ from tkinter import filedialog, Frame, Button, Entry, Tk, StringVar, E, Label, m
 from pandas import read_excel, DataFrame, ExcelFile, ExcelWriter
 import pypdftk
 from operator import itemgetter
-from os import listdir
+from os import listdir, path
 from collections import defaultdict
 
 # class for window content
@@ -111,6 +111,12 @@ class CoreGui(Frame):
         filename = filedialog.askopenfilename(initialdir = './',
                                               title = 'Select excel',
                                               filetypes =(('Excel Dateien','*.xlsx'),('Alle Dateien','*.*')))
+        self.df = read_excel(filename)
+        print("###### Gefundene Tabelle #####")
+        print(self.df.head())
+        print("")
+        print("##### Verfügbare Spalten IDs #####")
+        print("\n".join(list(self.df)))
         self.inputExcelPath.set(filename)
 
     def selectTargetFolder(self):
@@ -130,20 +136,22 @@ class CoreGui(Frame):
 
     def createMultiplePDF(self):
         #create dataframe from excel upload
-        df = read_excel(self.inputExcel.get())
         tP = self.inputTarget.get()
         # generate output file base string
-        OutPDF = self.inputPdf.get().split('/')[-1].split(".")[0]
+        OutPDF = path.join(self.inputPdf.get()).split('/')[-1].split(".")[0]
         ID = self.inputID.get().split(',')
         # iterate by row of data frame
-        for index, row in df.iterrows():
+        for index, row in self.df.iterrows():
             getRow = row.to_dict()
+            print(getRow)
             # get IDs for name
             IDval = itemgetter(*ID)(getRow)
+            if all("" == x for x in IDval):
+                return(print("Fertig"))
             # if multiple ID parts join them into single string
             if type(IDval) is tuple:
                 IDval = "_".join(map(str,IDval))
-            filename = IDval+'_'+OutPDF+'.pdf'
+            filename = str(IDval)+'_'+OutPDF+'.pdf'
             createdPdfList = listdir(tP)
             # add counter if filename already exists
             if filename in createdPdfList:
@@ -151,27 +159,27 @@ class CoreGui(Frame):
                 while filename in createdPdfList:
                     filename = IDval+'_'+OutPDF+'_'+str(count)+'.pdf'
                     count += 1
-            pypdftk.fill_form('"'+self.inputPdf.get()+'"', datas=getRow,
-                              out_file='"'+tP+'/'+filename+'"',
+            pypdftk.fill_form('"'+path.join(self.inputPdf.get())+'"', datas=getRow,
+                              out_file='"'+path.join(tP, filename)+'"',
                               flatten=False, need_appearances=True)
             print('Created: '+filename)
 
 
     def extractMultiplePDF(self):
-        pdfPath = self.inputBase.get()
-        xlsxOut = self.outputExcel.get()
+        pdfPath = path.join(self.inputBase.get())
+        xlsxOut = path.join(self.outputExcel.get())
         pdfFiles = [x for x in listdir(pdfPath) if ".pdf" in x.lower()]
         print("Gefundene PDFs:")
         print(pdfFiles)
         rows = []
         for el in pdfFiles:
-            raw = pypdftk.dump_data_fields('"'+pdfPath+'/'+el+'"')
+            raw = pypdftk.dump_data_fields('"'+path.join(pdfPath, el)+'"')
             if len(raw) > 0:
                 for x in raw:
                     if "FieldValue" in x.keys():
-                        rows = rows + [(x['FieldName'], x['FieldValue'])]
+                        rows = rows + [("\r".join(x['FieldName'].split("\r")[:-1]), "\r".join(x['FieldValue'].split("\r")[:-1]))]
                     else:
-                        rows = rows + [(x['FieldName'], '')]
+                        rows = rows + [("\r".join(x['FieldName'].split("\r")[:-1]), '')]
         print("Formulardaten:")
         print(rows)
 
@@ -185,7 +193,7 @@ class CoreGui(Frame):
         try:
             df = DataFrame.from_dict(drows)
             print(df)
-            writer = ExcelWriter(self.outputExcel.get())
+            writer = ExcelWriter(path.join(self.outputExcel.get()))
             df.to_excel(writer, 'Sheet1', index=False)
             writer.save()
         except:

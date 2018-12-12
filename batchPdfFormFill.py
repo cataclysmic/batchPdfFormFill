@@ -4,6 +4,7 @@ import pypdftk
 from operator import itemgetter
 from os import listdir, path
 from collections import defaultdict
+from html.parser import HTMLParser
 
 # class for window content
 class CoreGui(Frame):
@@ -108,9 +109,11 @@ class CoreGui(Frame):
         self.inputPdfStr.set(filename)
 
     def selectExcel(self):
-        filename = filedialog.askopenfilename(initialdir = './',
-                                              title = 'Select excel',
-                                              filetypes =(('Excel Dateien','*.xlsx'),('Alle Dateien','*.*')))
+        filename = filedialog.askopenfilename(initialdir='./',
+                                              title='Select excel',
+                                              filetypes=(
+                                                  ('Excel Dateien', '*.xlsx'),
+                                                  ('Alle Dateien', '*.*')))
         self.df = read_excel(filename)
         print("###### Gefundene Tabelle #####")
         print(self.df.head())
@@ -143,6 +146,10 @@ class CoreGui(Frame):
         # iterate by row of data frame
         for index, row in self.df.iterrows():
             getRow = row.to_dict()
+            # remove nan with empty string ''
+            for el in getRow.keys():
+                if getRow[el] == 'nan':
+                    getRow[el] = ''
             print(getRow)
             # get IDs for name
             IDval = itemgetter(*ID)(getRow)
@@ -166,6 +173,7 @@ class CoreGui(Frame):
 
 
     def extractMultiplePDF(self):
+        parser = HTMLParser()
         pdfPath = path.join(self.inputBase.get())
         xlsxOut = path.join(self.outputExcel.get())
         pdfFiles = [x for x in listdir(pdfPath) if ".pdf" in x.lower()]
@@ -173,13 +181,17 @@ class CoreGui(Frame):
         print(pdfFiles)
         rows = []
         for el in pdfFiles:
+            print(el) # print next filename
             raw = pypdftk.dump_data_fields('"'+path.join(pdfPath, el)+'"')
             if len(raw) > 0:
                 for x in raw:
-                    if "FieldValue" in x.keys():
-                        rows = rows + [("\r".join(x['FieldName'].split("\r")[:-1]), "\r".join(x['FieldValue'].split("\r")[:-1]))]
+                    print(x) # print current field output
+                    if b"FieldValue" in x.keys():
+                        #print(x[b'FieldValue'])
+                        rows = rows + [("\r".join(parser.unsecape(str(x[b'FieldName'])).split("\r")[:-1])),
+                                        ("\r".join(parser.unsecape(str(x[b'FieldValue'])).split("\r")[:-1]))]
                     else:
-                        rows = rows + [("\r".join(x['FieldName'].split("\r")[:-1]), '')]
+                        rows = rows + [("\r".join(parser.unsecape(str(x[b'FieldName'])).split("\r")[:-1]), '')]
         print("Formulardaten:")
         print(rows)
 
